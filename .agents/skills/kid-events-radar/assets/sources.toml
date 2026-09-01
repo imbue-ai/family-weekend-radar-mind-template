@@ -1,0 +1,100 @@
+# Event sources for the kid-events radar.
+#
+# parser:
+#   funcheap  -- deterministic: scrape the listing for per-event permalinks,
+#                then read each event page's schema.org JSON-LD (no model call).
+#   ai_rss    -- deterministic feed parse for recent items, then a model
+#                extraction over each item's prose.
+#   ai_html   -- irregular HTML -> link-preserving markdown -> model extraction.
+# needs_browser -- fetch via the Fortress browser instead of plain HTTP (for
+#                  sources that bot-block a normal request, e.g. Cloudflare 526).
+
+[[source]]
+key = "funcheap"
+name = "SF Funcheap"
+url = "https://sf.funcheap.com/category/event/event-types/kids-families/"
+parser = "funcheap"
+
+[[source]]
+key = "mommypoppins"
+name = "Mommy Poppins SF"
+url = "https://mommypoppins.com/san-francisco-bay-area-kids/weekend-events/things-to-do-in-san-francisco-this-weekend-san-jose-oakland-east-bay-kids-families"
+parser = "ai_html"
+
+[[source]]
+key = "bayareakidfun"
+name = "Bay Area Kid Fun"
+url = "https://www.bayareakidfun.com/family-friendly-events-in-the-bay-area/"
+parser = "ai_html"
+
+[[source]]
+key = "510families"
+name = "510 Families"
+url = "https://www.510families.com/events/"
+parser = "ai_html"
+
+[[source]]
+key = "sundaystreets"
+name = "Sunday Streets SF (official)"
+url = "https://sundaystreetssf.com/"
+parser = "ai_html"
+
+[[source]]
+key = "marinmommies"
+name = "Marin Mommies"
+url = "https://www.marinmommies.com/"
+parser = "ai_html"
+
+[[source]]
+key = "bayareaparent"
+name = "Bay Area Parent"
+url = "https://www.bayareaparent.com/things-to-do/"
+parser = "ai_html"
+
+[[source]]
+key = "sfpeninsula"
+name = "The SF Peninsula (tourism)"
+url = "https://www.thesanfranciscopeninsula.com/events/family/"
+parser = "ai_html"
+
+[[source]]
+key = "colorfulbunch"
+name = "Colorful Bunch"
+url = "https://colorfulbunch.com/pages/bay-area-family-events"
+parser = "ai_html"
+
+[[source]]
+key = "kidssf"
+name = "KidsSF"
+url = "https://kidssf.substack.com/feed"
+parser = "ai_rss"
+
+[[source]]
+key = "goldengatepark"
+name = "Golden Gate Park events"
+url = "https://goldengatepark.com/events"
+parser = "ai_html"
+needs_browser = true
+
+[[source]]
+key = "presidio"
+name = "Presidio events"
+url = "https://www.presidio.gov/calendar"
+parser = "ai_html"
+
+# Sources that cannot be automated (paywall / bot-walled social) -- shown to the
+# user as a "check these yourself" panel, never scraped.
+[[panel]]
+name = "Golden Gate Mothers Group (members forum)"
+url = "https://www.ggmg.org/"
+why = "Highest-value insider feed; paid members-only, cannot be auto-pulled."
+
+[[panel]]
+name = "@bayarea.moms (Instagram)"
+url = "https://www.instagram.com/bayarea.moms/"
+why = "Blocks automated reading."
+
+[[panel]]
+name = "Bay Area Festivals (Facebook)"
+url = "https://www.facebook.com/BayAreaFestivals/"
+why = "Blocks automated reading."
