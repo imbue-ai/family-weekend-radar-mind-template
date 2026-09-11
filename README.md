@@ -15,28 +15,46 @@ Didn't work? Create a Minds workspace and paste this to your agent:
 
 A weekly, self-updating radar of fun, kid-appropriate local events near home -- weekend-first with drive times, source links, flags for ticketed events, and a guided setup to point it at your own city.
 
-<!-- FILL-IN (publishing agent): BEFORE reporting done, replace this comment
-with one or two plain sentences on the PROBLEM this solves -- why someone
-would want it, not how it is built. Write for a human browsing GitHub who has
-never seen the original mind. -->
+The best local kids' events -- a fire-truck open house, a free museum day, a
+neighborhood festival -- spread by word of mouth through a network of other
+parents, and if you don't have that network you simply miss them. This
+template stands in for that network: once a week it pulls a dozen family-event
+sources, keeps only what fits your kid's age and a drivable radius of home,
+works out the drive time, and hands you a clean weekend-by-weekend list instead
+of a dozen tabs to check yourself.
 
 ## How to use it
 
-<!-- FILL-IN (publishing agent): BEFORE reporting done, replace this comment
-with how someone actually USES this once it is running: the commands,
-endpoints, screens, or workflow it exposes. This is the heart of the page, so
-give it the room it needs -- but default to concise and readable; a short list
-or a couple of worked examples beats a wall of prose. -->
+Once adopted, a "Family Weekend Radar" tab opens on this weekend as a wall of
+event cards -- each with a colored map-pin badge for the drive time, the venue
+and city, a one-line "why a kid would like this," caveat badges (ticketed,
+fundraiser, registration required, unverified time), and a link to the event's
+own page. A pager steps forward through the next several weekends, a "Meh"
+button de-emphasizes things you're not interested in, and a "worth a peek
+yourself" panel lists the human-only sources (parent Facebook groups,
+Instagram accounts) that can't be automated.
+
+The page only ever reads a snapshot file -- it never fetches on load. The
+snapshot comes from the `kid-events-radar` skill's `run all` command, which you
+(or a scheduled job) run weekly: it fetches the sources, filters and geocodes
+events, computes drive times, de-dupes, and writes the new snapshot. Until the
+first run, the tab shows a friendly "hasn't run yet" empty state rather than an
+error.
 
 ## Ideas for making it yours
 
-<!-- FILL-IN (publishing agent): BEFORE reporting done, replace this comment
-with three to five CONCRETE changes someone could make after adopting this
-(e.g. "point it at a different channel", "swap the daily digest for a weekly
-one", "add a second source alongside Slack"). These are optional invitations
-that show the thing is a starting point -- NOT the manifest's "Requirements",
-which are the things that must be resolved. Do not repeat items across the
-two. -->
+- Swap the shipped SF Bay Area source list for your own metro's family-event
+  sites, parent blogs, and library/museum calendars -- the skill's
+  `verify-source` subcommand lets you test a candidate URL before adding it.
+- Wire the "Meh" button to persist across weeks instead of resetting each
+  session, so the radar quietly learns what your family skips.
+- Add a second age band (e.g. a teen sibling) and show both age groups' event
+  sets side by side.
+- Feed the weekly snapshot into a Sunday-night digest message instead of (or
+  alongside) the web tab.
+- Extend the caveat flags with your own categories -- "outdoors," "free
+  parking," "stroller-friendly" -- if those are what actually decide whether
+  your family goes.
 
 ## What this is
 

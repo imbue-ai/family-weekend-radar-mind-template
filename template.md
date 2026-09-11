@@ -18,11 +18,28 @@ follow "How to adapt it" below.
 
 A weekly, self-updating radar of fun, kid-appropriate local events near home -- weekend-first with drive times, source links, flags for ticketed events, and a guided setup to point it at your own city.
 
-<!-- FILL-IN (publishing agent): BEFORE reporting done, replace this comment
-with a one-paragraph overview of what this template does for its user: the
-problem it solves, the main things it produces (pages, reports, automations),
-and what the user sees when it is running. Write for a reader who has never
-seen the original mind. -->
+Family Weekend Radar solves a specific parenting problem: the best local kids'
+events -- a fire-truck open house, a free museum day, a neighborhood festival --
+spread by word of mouth through a network of other parents, and if you do not
+have that network you simply miss them. This template stands in for that
+network. Once a week it pulls a dozen Bay Area family-event sources, keeps only
+the events that fit a child's age and sit within a drivable radius of home,
+works out the drive time to each, de-dupes across sources, flags the caveats
+(ticketed, fundraiser, registration required, unverified time), and buckets
+everything into upcoming weekends plus a Thursday/Friday early-evening slot. The
+result is written to a stable snapshot file.
+
+What the user sees is a single web tab -- the "Family Weekend Radar" -- that
+reads that snapshot. It opens on this weekend as a wall of cheerful event cards,
+each with a colored map-pin badge showing the drive time (green for close, warm
+for far), the venue and city, a one-line "why a kid would like this", caveat
+badges, and a deep link to the event's own page. A pager steps forward through
+the next several weekends so a parent can plan ahead, a "Meh" control
+de-emphasizes things they are not interested in, and a "worth a peek yourself"
+panel lists the human-only sources (parent Facebook groups, Instagram accounts)
+that can't be automated. The page never fetches on load; it just renders the
+latest snapshot, and shows a friendly empty state until the first weekly run has
+happened -- confirmed by booting the app with no snapshot present at all.
 
 ## How it works
 
@@ -34,13 +51,43 @@ from the original mind onto a clean default-workspace-template base):
 - `system/supervisord.conf`
 - `pyproject.toml`
 
-<!-- FILL-IN (publishing agent): BEFORE reporting done, replace this comment
-with prose that makes the list above self-explanatory: for each included path,
-say what it is (an app or lib with code, a skill, data) and what role it plays.
-Then describe how the pieces wire together at runtime: which supervisord
-programs (in system/supervisord.conf) run them, which ports they listen on and how
-those are registered in forward_port.py (if applicable), and any scripts or
-services that connect them. -->
+There are two moving parts -- a pipeline that produces data and an app that
+displays it -- plus the two files that wire the app into the workspace:
+
+- **`.agents/skills/kid-events-radar`** is the pipeline (a crystallized skill).
+  Its `run all` entry point fetches the shipped family-event sources
+  concurrently (falling back to the bundled stealth browser for JavaScript-heavy
+  or bot-blocking pages), extracts events, filters by age and drive radius,
+  geocodes each venue and computes drive time from home, curates out adult /
+  non-kid events while keeping-and-flagging ticketed and fundraiser ones,
+  fuzzy-de-dupes across sources, buckets the survivors into pageable weekends
+  plus a Thursday/Friday evening list, and writes the snapshot to
+  `data/.skills/kid-events-radar/latest.json`. It also carries a `verify-source`
+  subcommand (test a candidate URL before adding it) and a "Setting up for your
+  area" guide for adopters outside the Bay Area. The source list lives in
+  `assets/sources.toml`, editable with no code change.
+- **`system/apps/kid_events_radar`** is the Flask web app -- the "Family Weekend
+  Radar" tab. It is a pure read layer over the snapshot: on each request it
+  reads `latest.json`, shapes it, and renders the single-page view (weekend
+  cards, drive-time pins, the weekend pager, the Thu/Fri evening section, the
+  "Meh" de-emphasize control, and the check-yourself panel). It never runs the
+  pipeline itself and degrades to a graceful empty state when no snapshot exists
+  yet.
+- **`system/supervisord.conf`** carries the `kid-events-radar` program entry.
+  That program registers the app's port with `system/scripts/forward_port.py`
+  (`--url http://localhost:8080 --name kid-events-radar --icon-file
+  system/apps/kid_events_radar/icon.svg --program kid-events-radar`) and then
+  runs `uv run kid-events-radar`, so the tab is served on port 8080 and
+  supervised like every other app. It starts automatically (`autostart=true`):
+  the app needs no external accounts or secrets, and renders a friendly empty
+  state until the first weekly run.
+- **`pyproject.toml`** carries `kid_events_radar` as a workspace package (and its
+  `kid-events-radar` entry-point script), so `uv run kid-events-radar` resolves.
+
+At runtime the two halves meet only at the snapshot file: the pipeline writes
+it (on demand or on a weekly schedule the adopter sets up), and the app reads it.
+Nothing connects them directly, which is why the app stays fast and the pipeline
+can run unattended.
 
 ## Recipe
 
@@ -67,49 +114,49 @@ theirs. Two kinds of entry, handled at different times:
 - **Adaptation** -- what must be DECIDED or REWIRED, in prose. Worked through
   interactively with the user, after activation.
 
-<!-- FILL-IN (publishing agent): BEFORE reporting done, replace this comment
-with both kinds of entry.
+**Activation** -- what the adopting agent sets up before anything runs:
 
-ACTIVATION -- one line each, using exactly these forms (greppable by `requires_`):
+- requires_llm: the pipeline calls Claude to extract and curate events. It is
+  written for the KEYLESS subscription path (`claude -p`, via
+  `scripts/claude_p.py`) -- no API key needed. An adopter on the keyed path
+  (`ANTHROPIC_API_KEY` / litellm) can switch the two model call sites
+  (extraction and curation) per the `use-ai-integration` skill. A full weekly
+  run costs roughly $0.65-0.85 on the keyless path.
 
-- requires_permission: <latchkey scope> / <permission schema> (user-approved;
-  the adopting agent initiates this via a latchkey permission request during
-  setup -- it must not merely mention it)
-- requires_secret: <ENV_VAR or config key> (what it is for and where to put it)
-- requires_llm: <how the code reaches Claude, and what an adopter needs>
-  (include this line whenever the app calls an LLM: name the method it was
-  built for -- keyed litellm via ANTHROPIC_API_KEY, or keyless subscription via
-  claude -p -- so an adopter on the other method knows to switch it per the
-  use-ai-integration skill)
+No external permissions or secrets are required. Every automatable source is
+fetched anonymously over plain HTTP (with the base image's bundled Fortress /
+Chromium browser as a fallback for JavaScript-heavy or bot-blocking pages), and
+geocoding and drive-time use free public services (Nominatim and OSRM) that
+need no key. So there are no `requires_permission` or `requires_secret` lines.
 
-Derive the real values from the included code (e.g. every service the app
-calls through `latchkey curl`, and whether any code calls an LLM). Example:
-- requires_permission: slack-api / slack-read-all (user-approved; adopting
-  agent initiates during setup)
-- requires_llm: calls Claude via the keyed litellm path (ANTHROPIC_API_KEY set);
-  an adopter on the keyless subscription path must switch the model calls per
-  use-ai-integration
+**Adaptation** -- what the adopter should decide or rewire, interactively:
 
-These lines are what the ADOPTING agent acts on during setup, so a vague or
-missing one silently breaks adoption -- a real incident: an adopter was never
-prompted for a Slack permission the app needed. They are also what the lead
-surfaces back to the publishing user for confirmation, so the list must be
-complete and accurate. EVERY line must have its counterpart in
-`template.toml`'s `[requirements]` (`[[requirements.permission]]`,
-`[[requirements.secret]]`, `[requirements.llm]`); the validator compares
-them and fails the publish if they disagree.
-
-ADAPTATION -- one bullet each, in plain prose: every gap the adapter must
-decide or rewire (stubbed integrations, hardcoded accounts/channels/ids, data
-that was not included, anything that will not work out of the box). For each,
-say what is missing and what a working replacement looks like. Mirror them as
-`[[requirements.adaptation]]` entries in the TOML.
-
-Do not repeat the README's "Ideas for making it yours" here -- those are
-optional invitations, these are things that must be resolved.
-
-If there is genuinely nothing of either kind, write exactly: "No requirements --
-runs as published, with no external permissions or secrets." -->
+- **Home address.** The default home ships as a neutral "San Francisco, CA"
+  city-center point. The adopter should set it to their actual home address
+  (and coordinates) -- either by passing `--home-address` / `--home-description`
+  / `--home-coords` on the run, or by editing the defaults in
+  `scripts/radar_config.py` so scheduled runs use them without flags. The
+  coordinates are what drive-time is measured from, so they matter.
+- **Age and radius.** The defaults are ages 4-7 within a 60-minute drive. An
+  adopter with different-aged children, or in a denser or sparser area, should
+  adjust `--age-min` / `--age-max` and `--drive-radius-min` (or the config
+  defaults).
+- **Source list (only outside the Bay Area).** The shipped `assets/sources.toml`
+  is an SF Bay Area list, so a Bay Area adopter is turnkey. An adopter elsewhere
+  must rebuild it for their metro following the skill's "Setting up for your
+  area" section: web-search their city for family-event aggregators, parent
+  blogs, library / parks calendars, and museum/zoo pages, run each candidate
+  through the skill's `verify-source` subcommand, and keep the ~5-8 that pass.
+  The static "check these yourself" panel entries should likewise be swapped for
+  local parent groups.
+- **Weekly schedule.** The pipeline is headless and meant to run on a cadence,
+  but the template does not ship a cron entry. The adopter should schedule
+  `run all` (e.g. a Monday-morning job) via the `manage-scheduled-tasks` skill.
+- **"Meh" preference persistence.** The web view's "Meh" de-emphasize control is
+  client-side only today (it lives in the page for the current session and does
+  not yet write back to the pipeline's `preference_profile.json`). An adopter
+  who wants those preferences to persist across weekly runs would need to wire
+  the control to that profile file.
 
 ## Environment
 
@@ -119,17 +166,12 @@ converges it at ITS OWN pinned apt snapshot timestamp, so package versions come
 out consistent with the rest of that mind's environment rather than frozen to
 whatever this publisher happened to have.
 
-<!-- FILL-IN (publishing agent): BEFORE reporting done, replace this comment
-with a plain-language summary of what gets installed and why -- one line per
-thing, naming what needs it (e.g. "poppler-utils: the digest renders PDF
-attachments to text"). Fill in the matching entries in template.toml's
-[environment] table at the same time; that table is what actually installs
-anything, and this prose is what a human reads.
-
-Derive it from the included code, not from what happens to be installed on this
-machine: every binary the code shells out to, every global npm/uv/cargo tool it
-invokes. If it needs nothing beyond the template's own environment, write
-exactly: "Nothing extra -- runs on the stock workspace environment." -->
+Nothing extra -- runs on the stock workspace environment. The app and pipeline
+are pure Python (Flask plus the standard library and the repo's existing
+dependencies), and the JavaScript-heavy sources are fetched with the base
+image's bundled Fortress / Chromium browser, so there are no additional apt,
+npm, uv, or cargo installs. Geocoding and routing use the free public Nominatim
+and OSRM services over the network, which need nothing installed.
 
 ## How to adapt it
 
@@ -165,11 +207,7 @@ This template's changelog: what each published version changed. The PUBLISHER
 appends one entry per version (newest last); earlier entries are never rewritten.
 This is distinct from "Adaptation history" below, which is the ADOPTERS' log.
 
-<!-- FILL-IN (publishing agent): BEFORE reporting done, replace this comment with
-the first entry, in the form:
-### v1 (YYYY-MM-DD) -- <one line: what this first version publishes>
-using today's date. A later update of this template (the update-published-template
-flow) appends "### v2 (date) -- what changed since v1", and so on. -->
+### v1 (2026-09-10) -- first release on the imbue-ai fork: the kid-events pipeline skill plus the Family Weekend Radar web app, re-cut onto minds-v0.5.0 with the app autostarting (no external permissions needed) and a neutral San Francisco default home plus a guided setup for adapting the source list to any city.
 
 ## Adaptation history
 

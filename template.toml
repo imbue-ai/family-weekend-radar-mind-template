@@ -18,44 +18,34 @@ version = "v1"
 [recipe]
 include = ["system/apps/kid_events_radar", ".agents/skills/kid-events-radar", "system/supervisord.conf", "pyproject.toml"]
 data_include = []
-# FILL IN: one entry per deliberate exclusion (paths left out, and
-# features stripped from an included path). Leave [] if nothing was.
 exclude = []
-# FILL IN: one entry per published-version modification, stated as a RULE
-# and NEVER the removed value -- the point of a modification is that the
-# value does not ship. e.g. "replace the hardcoded team channel with a
-# neutral default". Leave [] if there were none.
 modification_rules = []
 
-# Everything an adopter must deal with before this is really theirs.
-# One list -- but each entry's KIND says how it is handled, because the
-# two are handled at different times by different mechanisms:
-#
-#   permission / secret / llm = ACTIVATION. The adopting agent acts on
-#   these FIRST and BY ITSELF, initiating each latchkey permission
-#   request before asking the user anything. Every one of them must have
-#   a matching requires_ line in template.md and vice versa -- the
-#   validator checks that, because an adopter once never got prompted
-#   for a permission the app needed.
-#
-#   adaptation = worked through INTERACTIVELY with the user afterwards.
-#   Prose on both sides, so it is not cross-checked.
-#
-# FILL IN, e.g.:
-#   [[requirements.permission]]
-#   scope = "slack-api"
-#   permission = "slack-read-all"
-#
-#   [[requirements.secret]]
-#   name = "SLACK_SIGNING_SECRET"
-#
-#   [requirements.llm]
-#   method = "keyed"   # keyed (an API key, e.g. ANTHROPIC_API_KEY) | keyless (a subscription CLI, e.g. claude -p)
-#
-#   [[requirements.adaptation]]
-#   summary = "the digest channel is hardcoded"
-#   resolution = "ask the user which channel to watch"
 [requirements]
+
+[requirements.llm]
+method = "keyless"
+note = "Extraction and curation call Claude via the keyless claude -p path (scripts/claude_p.py); an adopter on the keyed ANTHROPIC_API_KEY / litellm path can switch those two call sites per use-ai-integration. A full weekly run costs roughly $0.65-0.85 keyless."
+
+[[requirements.adaptation]]
+summary = "the default home is a neutral San Francisco, CA city-center point"
+resolution = "set it to the adopter's real home address and coordinates via --home-address / --home-coords or the defaults in scripts/radar_config.py"
+
+[[requirements.adaptation]]
+summary = "age filter (4-7) and drive radius (60 min) are defaults"
+resolution = "adjust --age-min / --age-max and --drive-radius-min (or the config defaults) to the adopter's kids and area"
+
+[[requirements.adaptation]]
+summary = "the shipped source list in assets/sources.toml is SF Bay Area specific"
+resolution = "Bay Area adopters keep it as-is; adopters elsewhere rebuild it for their metro following the skill's 'Setting up for your area' guide, using verify-source to vet ~5-8 candidates, and swap the check-yourself panel entries"
+
+[[requirements.adaptation]]
+summary = "no weekly schedule ships with the template"
+resolution = "schedule the pipeline's 'run all' on a cadence (e.g. Monday morning) via the manage-scheduled-tasks skill"
+
+[[requirements.adaptation]]
+summary = "the web view's 'Meh' de-emphasize control is client-side only"
+resolution = "to persist preferences across weekly runs, wire the control to the pipeline's preference_profile.json"
 
 # What the included code needs INSTALLED. apt takes bare names: versions
 # are a function of the apt snapshot timestamp, so replaying names at the
