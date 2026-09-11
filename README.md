@@ -5,11 +5,11 @@
 # Family Weekend Radar
 
 <p align="center">
-  <a href="https://boweiliu.github.io/open-in-minds/?git_url=https://github.com/MINDS_TEMPLATE_REPO_URL"><img alt="Open in Minds" height="64" src="https://img.shields.io/badge/Open%20in%20Minds-D8D1C0?style=for-the-badge"></a>
+  <a href="https://boweiliu.github.io/open-in-minds/?git_url=https://github.com/imbue-ai/family-weekend-radar-mind-template"><img alt="Open in Minds" height="64" src="https://img.shields.io/badge/Open%20in%20Minds-D8D1C0?style=for-the-badge"></a>
 </p>
 
 Didn't work? Create a Minds workspace and paste this to your agent:
-` /use-template https://github.com/MINDS_TEMPLATE_REPO_URL`
+` /use-template https://github.com/imbue-ai/family-weekend-radar-mind-template`
 
 ## Why you care
 
