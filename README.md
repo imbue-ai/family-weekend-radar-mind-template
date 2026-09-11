@@ -1,52 +1,50 @@
-# Your workspace
+<p align="center">
+  <img alt="Family Weekend Radar" src="template.svg" width="480">
+</p>
 
-This folder is your mind's home: everything it knows, everything it builds,
-and the machinery that keeps it running.
+# Family Weekend Radar
 
-## Creations
+<p align="center">
+  <a href="https://boweiliu.github.io/open-in-minds/?git_url=https://github.com/MINDS_TEMPLATE_REPO_URL"><img alt="Open in Minds" height="64" src="https://img.shields.io/badge/Open%20in%20Minds-D8D1C0?style=for-the-badge"></a>
+</p>
 
-Broadly, in Minds you make "creations". These can be "code" (apps, skills, and
-the services behind them) or "data" (documents, images, notes).
+Didn't work? Create a Minds workspace and paste this to your agent:
+` /use-template https://github.com/MINDS_TEMPLATE_REPO_URL`
 
-Minds makes this easier by defining some conventions for the common things
-you'll want to make:
+## Why you care
 
-1. an "app" - something you can open as a tab and interact with
-2. a "skill" - teaches your mind how to do work you care about. A skill that
-   is automatically run on a schedule is called an "automation" (the
-   machinery that runs them lives in `system/libs/automations/`; the weekly
-   Caretaker is the built-in example)
-3. some "data" - documents, images, notes, or data created by your apps and
-   skills
-4. some "customizations" - changes to any of the above. Everything in Minds
-   can be modified by you!
+A weekly, self-updating radar of fun, kid-appropriate local events near home -- weekend-first with drive times, source links, flags for ticketed events, and a guided setup to point it at your own city.
 
-## What's here
+<!-- FILL-IN (publishing agent): BEFORE reporting done, replace this comment
+with one or two plain sentences on the PROBLEM this solves -- why someone
+would want it, not how it is built. Write for a human browsing GitHub who has
+never seen the original mind. -->
 
-- `apps/` - Everything you can open as a tab: the built-in apps (the
-  terminal, the browser) and the apps your mind builds for you. (A shortcut
-  to `system/apps/`.)
-- `skills/` - Everything your mind knows how to do: the built-in skills and
-  the ones it has learned for you. (A shortcut to `.agents/skills/`.)
-- `data/` - Your workspace's data: documents and project folders, files
-  you've uploaded, your mind's memories, and each app's stored data.
-- `docs/` - Guides to this workspace: what it is, how it works, and a history
-  of where it came from.
-- `system/` - The machinery that runs the workspace: the apps themselves,
-  background services, scripts, and configuration. You can look around (every
-  folder has a README), and your mind maintains it for you.
+## How to use it
 
-A few housekeeping files live alongside them:
+<!-- FILL-IN (publishing agent): BEFORE reporting done, replace this comment
+with how someone actually USES this once it is running: the commands,
+endpoints, screens, or workflow it exposes. This is the heart of the page, so
+give it the room it needs -- but default to concise and readable; a short list
+or a couple of worked examples beats a wall of prose. -->
 
-- `README.md` - This file.
-- `CLAUDE.md` - The standing instructions your mind follows.
-- `pyproject.toml` and `uv.lock` - The Python project definition; the tooling
-  requires them at the top level.
+## Ideas for making it yours
 
-## Where things are kept safe
+<!-- FILL-IN (publishing agent): BEFORE reporting done, replace this comment
+with three to five CONCRETE changes someone could make after adopting this
+(e.g. "point it at a different channel", "swap the daily digest for a weekly
+one", "add a second source alongside Slack"). These are optional invitations
+that show the thing is a starting point -- NOT the manifest's "Requirements",
+which are the things that must be resolved. Do not repeat items across the
+two. -->
 
-The workspace is a git repository: code and configuration changes are
-committed as your mind works. Everything under `data/` is deliberately kept
-out of git (it can be large, personal, or both) and is protected by the
-workspace's continuous encrypted backup instead, along with the rest of the
-workspace. See `docs/` for details.
+## What this is
+
+This repository is a published **minds template**: a clean, bootable
+snapshot of what a mind built, ready to adapt into your own. It is NOT the
+generic workspace template -- it is this specific project.
+
+[`template.md`](template.md) is the full manifest -- what it is, how it
+works, what it needs to run, and what to adapt -- with the
+machine-readable half (recipe, requirements, and the environment it needs
+installed) in [`template.toml`](template.toml).
